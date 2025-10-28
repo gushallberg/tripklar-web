@@ -1,30 +1,32 @@
 name: CI
 on:
   pull_request:
-    branches: [ main ]
+    branches: [ main ]          # kör checks på PR:er mot main
   push:
-    branches: [ main, codex/** ]
-  workflow_dispatch: {}
+    branches: [ main, codex/**, feature/**, fix/** ]  # kör även på pushes till dessa branch-mönster
+  workflow_dispatch: {}          # möjliggör "Run workflow" manuellt
 
 jobs:
   build-test:
     runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20 (with npm cache)
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
 
-      - name: Install deps (ci with fallback)
-        run: |
-          npm ci || npm install
+      - name: Install deps (npm ci with fallback)
+        run: npm ci || npm install
 
       - name: Build Next.js
         run: npm run build
 
-      - name: Build Storybook if stories exist
+      - name: Build Storybook (guarded)
         run: |
           if ls components/**/*.stories.* 1> /dev/null 2>&1 || ls stories/**/*.stories.* 1> /dev/null 2>&1; then
             npm run build-storybook || npx -y storybook@8 build
