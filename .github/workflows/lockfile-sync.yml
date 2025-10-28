@@ -1,0 +1,38 @@
+name: Lockfile Sync
+on:
+  workflow_dispatch: {}
+
+jobs:
+  sync:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write  # allow pushing the updated lockfile
+    steps:
+      - name: Checkout (target branch)
+        uses: actions/checkout@v4
+        with:
+          # Use the selected ref from "Run workflow" dropdown
+          ref: ${{ github.ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Ensure public registry (optional)
+        run: |
+          echo "registry=https://registry.npmjs.org/" > .npmrc
+
+      - name: Clean install to regenerate lockfile
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install
+
+      - name: Commit updated lockfile
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "chore: regenerate package-lock.json" || echo "No changes"
+          git push
