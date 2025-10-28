@@ -1,17 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    appDir: true
-  },
+  // App Router is default in Next.js 14 — no need for experimental.appDir
   images: {
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'picsum.photos',
-        pathname: '/seed/**'
-      }
-    ]
-  }
+      { protocol: 'https', hostname: '**' }
+    ],
+  },
+  // lägg ev. andra giltiga inställningar här
 };
 
 export default nextConfig;
