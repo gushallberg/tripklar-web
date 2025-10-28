@@ -1,0 +1,8 @@
+node_modules
+.next
+out
+storybook-static
+.DS_Store
+.env.local
+playwright-report
+*.log

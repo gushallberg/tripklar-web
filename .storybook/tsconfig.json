@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "..",
+    "types": ["node"],
+    "jsx": "preserve"
+  },
+  "include": [
+    "../stories/**/*",
+    "../components/**/*",
+    "./preview.ts",
+    "./main.ts"
+  ],
+  "exclude": ["../node_modules", "../.next"]
+}
