@@ -1,6 +1,5 @@
 import type { Config } from 'tailwindcss'
 import forms from '@tailwindcss/forms'
-import lineClamp from '@tailwindcss/line-clamp'
 
 const config: Config = {
   content: [
@@ -12,7 +11,7 @@ const config: Config = {
   theme: {
     extend: {},
   },
-  plugins: [forms, lineClamp],
+  plugins: [forms], // line-clamp tas bort (ingår numera i Tailwind)
 }
 
 export default config
