@@ -5,25 +5,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Use Node 20.x
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '20'
           cache: 'npm'
-      - name: Detect lockfile
-        id: lockfile
+      - name: Install deps (prefer npm ci, fallback to npm install)
         run: |
           if [ -f package-lock.json ]; then
-            echo "exists=true" >> $GITHUB_OUTPUT
+            npm ci || npm install
           else
-            echo "exists=false" >> $GITHUB_OUTPUT
+            npm install
           fi
-      - name: Install deps (npm ci if lockfile)
-        if: steps.lockfile.outputs.exists == 'true'
-        run: npm ci
-      - name: Install deps (fallback npm install)
-        if: steps.lockfile.outputs.exists != 'true'
-        run: npm install
       - run: npm run lint --if-present
       - run: npm run build
-      - run: npx playwright install --with-deps
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
       - run: npm run test:e2e --if-present
