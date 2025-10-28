@@ -1,0 +1,31 @@
+name: CI
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main, codex/**, feature/**, fix/** ]
+  workflow_dispatch: {}
+jobs:
+  build-test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - name: Install deps (ci with fallback)
+        run: npm ci || npm install
+      - name: Build Next.js
+        run: npm run build
+      - name: Build Storybook if stories exist
+        run: |
+          if ls components/**/*.stories.* 1> /dev/null 2>&1 || ls stories/**/*.stories.* 1> /dev/null 2>&1; then
+            npm run build-storybook || npx -y storybook@8 build
+          else
+            echo "No stories found, skipping Storybook build."
+          fi
+      - name: Install Playwright browsers
+        run: npx playwright install --install-deps=true
+      - name: Run Playwright smoke
+        run: npm run test:e2e --if-present
