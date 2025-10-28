@@ -2,7 +2,8 @@
 
 Tripklar is a Next.js 14 + Tailwind CSS frontend that showcases mocked itinerary suggestions while the backend is prepared. This repo ships with Storybook, Playwright smoke tests, and GitHub Actions CI so that PRs can build previews on Vercel.
 
-## Getting started
+## Getting started 
+
 
 ```bash
 npm install
