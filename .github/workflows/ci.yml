@@ -1,24 +1,39 @@
 name: CI
-on: [pull_request]
+
+on:
+  pull_request:
+
+# (Optional but nice) cancel older runs on the same PR
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Use Node 20.x
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-      - name: Install deps (prefer npm ci, fallback to npm install)
-        run: |
-          if [ -f package-lock.json ]; then
-            npm ci || npm install
-          else
-            npm install
-          fi
-      - run: npm run lint --if-present
-      - run: npm run build
-      - name: Install Playwright browsers
+
+      # === PLAN A: force npm install (ignore lockfile sync issues) ===
+      - name: Install dependencies (force npm install)
+        run: npm install
+
+      - name: Lint (if present)
+        run: npm run lint --if-present
+
+      - name: Build
+        run: npm run build
+
+      - name: Install Playwright browsers (for e2e)
         run: npx playwright install --with-deps
-      - run: npm run test:e2e --if-present
+
+      - name: E2E smoke tests (if present)
+        run: npm run test:e2e --if-present
