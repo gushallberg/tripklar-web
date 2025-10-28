@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-slate-50 text-gray-900 font-sans;
+}
+
+a {
+  @apply focus:outline-none focus:ring-2 focus:ring-black/20;
+}
+
+button {
+  @apply focus:outline-none focus:ring-2 focus:ring-black/20;
+}
