@@ -32,8 +32,8 @@ jobs:
             echo "No stories found, skipping Storybook build."
           fi
 
-      - name: Install Playwright browsers (Ubuntu 24.04)
-        run: npx playwright install --install-deps=true
+      - name: Install Playwright browsers + OS deps
+        run: npx playwright install --with-deps
 
       - name: Run Playwright smoke tests
         run: npm run test:e2e --if-present
