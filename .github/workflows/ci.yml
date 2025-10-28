@@ -9,7 +9,20 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-      - run: npm ci
+      - name: Detect lockfile
+        id: lockfile
+        run: |
+          if [ -f package-lock.json ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Install deps (npm ci if lockfile)
+        if: steps.lockfile.outputs.exists == 'true'
+        run: npm ci
+      - name: Install deps (fallback npm install)
+        if: steps.lockfile.outputs.exists != 'true'
+        run: npm install
       - run: npm run lint --if-present
       - run: npm run build
       - run: npx playwright install --with-deps
