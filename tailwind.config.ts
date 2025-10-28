@@ -1,17 +1,18 @@
-import type { Config } from 'tailwindcss';
-import forms from '@tailwindcss/forms';
-import lineClamp from '@tailwindcss/line-clamp';
+import type { Config } from 'tailwindcss'
+import forms from '@tailwindcss/forms'
+import lineClamp from '@tailwindcss/line-clamp'
 
 const config: Config = {
-  content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}', './stories/**/*.{ts,tsx}'],
+  content: [
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './stories/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
   theme: {
-    extend: {
-      fontFamily: {
-        sans: ['"Inter"', 'system-ui', 'sans-serif']
-      }
-    }
+    extend: {},
   },
-  plugins: [forms, lineClamp]
-};
+  plugins: [forms, lineClamp],
+}
 
-export default config;
+export default config
