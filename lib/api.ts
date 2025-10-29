@@ -20,7 +20,7 @@ export type SuggestItem = {
   durationHours?: number;
   tags?: string[];
   image?: string;
-  url?: string; // extern eller intern länk
+  url?: string; // extern/intern länk
 };
 
 export type SuggestResponse = {
@@ -35,9 +35,23 @@ export type SuggestResponse = {
   };
 };
 
+export type Itinerary = {
+  id: string;
+  title: string;
+  description?: string;
+  days?: Array<{
+    title?: string;
+    stops?: Array<{
+      id?: string;
+      title?: string;
+      notes?: string;
+      durationMinutes?: number;
+    }>;
+  }>;
+};
+
 /**
- * Bygger en bas-URL som funkar i SSR/CI och lokalt.
- * Tillåter värden som "https://tripklar.se/" och trimmar trailing slashar.
+ * Bas-URL som funkar i SSR/CI och lokalt.
  */
 export function getBaseUrl(): string {
   const env = process.env.NEXT_PUBLIC_SITE_URL?.trim();
@@ -46,7 +60,7 @@ export function getBaseUrl(): string {
 }
 
 /**
- * En tunn fetch-wrapper med timeout + bättre felmeddelanden.
+ * Tunn fetch-wrapper med timeout + tydliga fel.
  */
 async function fetchJson<T>(
   input: string | URL,
@@ -64,7 +78,6 @@ async function fetchJson<T>(
         'content-type': 'application/json',
         ...(rest.headers || {}),
       },
-      // Viktigt i SSR/CI när data inte ska cache:as mellan körningar
       cache: rest.cache ?? 'no-store',
     });
 
@@ -80,7 +93,6 @@ async function fetchJson<T>(
 
     return (await res.json()) as T;
   } catch (err: any) {
-    // Gör fel tydliga i CI-loggar
     if (err?.name === 'AbortError') {
       throw new Error(`Fetch timeout after ${timeoutMs}ms for ${input}`);
     }
@@ -91,10 +103,39 @@ async function fetchJson<T>(
 }
 
 /**
- * Hämtar förslag från vår mock-endpoint.
- * Bygger alltid absolut URL för att undvika ERR_INVALID_URL i SSR/e2e.
+ * Hämtar förslag (retur: en LISTA, för att matcha daytrip-sidan).
+ * Behåll denna signatur tills UI:t eventuellt vill ha metadata.
  */
-export async function getSuggest(params: SuggestParams): Promise<SuggestResponse> {
+export async function getSuggest(params: SuggestParams): Promise<SuggestItem[]> {
+  const {
+    scenario,
+    city,
+    date = '',
+    radiusKm = 150,
+    tags = [],
+    limit = 3,
+  } = params;
+
+  const base = getBaseUrl();
+  const url = new URL('/api/mock/suggest', base);
+
+  url.searchParams.set('scenario', scenario);
+  url.searchParams.set('city', city);
+  url.searchParams.set('date', date);
+  url.searchParams.set('radiusKm', String(radiusKm));
+  if (tags.length) url.searchParams.set('tags', tags.join(','));
+  url.searchParams.set('limit', String(limit));
+
+  const data = await fetchJson<SuggestResponse>(url, { method: 'GET' });
+  return Array.isArray(data?.items) ? data.items : [];
+}
+
+/**
+ * Alternativ helper om du vill komma åt metadata också.
+ */
+export async function getSuggestResponse(
+  params: SuggestParams
+): Promise<SuggestResponse> {
   const {
     scenario,
     city,
@@ -118,20 +159,20 @@ export async function getSuggest(params: SuggestParams): Promise<SuggestResponse
 }
 
 /**
- * Exempel på fler helpers (framtidssäkert om ni lägger till riktiga API:er).
- * Avkommentera vid behov.
+ * Export som efterfrågas av itinerary-sidan.
+ * Antag att API:et är /api/mock/itinerary?id=<id>.
+ * (Justera gärna om ni har en annan rutt, t.ex. /api/mock/itinerary/[id])
  */
+export async function getItinerary(id: string): Promise<Itinerary> {
+  if (!id) throw new Error('getItinerary: id is required');
 
-// export async function getPlaceById(id: string) {
-//   const base = getBaseUrl();
-//   const url = new URL(`/api/places/${encodeURIComponent(id)}`, base);
-//   return fetchJson<{ id: string; title: string; description?: string }>(url);
-// }
+  const base = getBaseUrl();
+  // Variant A: query-param
+  const url = new URL('/api/mock/itinerary', base);
+  url.searchParams.set('id', id);
 
-// export async function searchTrips(query: string, limit = 10) {
-//   const base = getBaseUrl();
-//   const url = new URL('/api/trips/search', base);
-//   url.searchParams.set('q', query);
-//   url.searchParams.set('limit', String(limit));
-//   return fetchJson<{ items: Array<{ id: string; title: string }> }>(url);
-// }
+  // // Variant B (om ni kör dynamic route):
+  // const url = new URL(`/api/mock/itinerary/${encodeURIComponent(id)}`, base);
+
+  return fetchJson<Itinerary>(url, { method: 'GET' });
+}
