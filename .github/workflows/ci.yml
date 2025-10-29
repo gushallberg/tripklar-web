@@ -1,20 +1,42 @@
 name: CI
 on:
   pull_request:
-    branches: [ main ]
+    branches: [ main ]           # kör checks på PR:er mot main
   push:
-    branches: [ main, codex/**, feature/**, fix/** ]
-  workflow_dispatch: {}
+    branches: [ main, codex/**, feature/**, fix/** ]  # tillåter körning vid push också
+  workflow_dispatch: {}          # möjliggör "Run workflow" manuellt
+
 jobs:
-  build:
+  build-test:
     runs-on: ubuntu-24.04
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20 (with npm cache)
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
-      - name: Install dependencies
+
+      - name: Install deps (npm ci with fallback)
         run: npm ci || npm install
-      - name: Build
+
+      - name: Build Next.js
         run: npm run build
+
+      # Läggs till i senare PR:er när du vill
+      # - name: Build Storybook (guarded)
+      #   run: |
+      #     if ls components/**/*.stories.* 1> /dev/null 2>&1 || ls stories/**/*.stories.* 1> /dev/null 2>&1; then
+      #       npm run build-storybook || npx -y storybook@8 build
+      #     else
+      #       echo "No stories found, skipping Storybook build."
+      #     fi
+      #
+      # - name: Install Playwright browsers + OS deps
+      #   run: npx playwright install --with-deps
+      #
+      # - name: Run Playwright smoke tests
+      #   run: npm run test:e2e --if-present
