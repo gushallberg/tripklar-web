@@ -32,3 +32,12 @@ jobs:
           else
             echo "No stories found, skipping Storybook build."
           fi
+
+      # 🔽 Lägg till dessa två steg
+      - name: Install Playwright browsers (Ubuntu 24.04)
+        run: npx playwright install --with-deps
+
+      - name: Run e2e tests (Playwright)
+        env:
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000
+        run: npm run test:e2e --if-present
