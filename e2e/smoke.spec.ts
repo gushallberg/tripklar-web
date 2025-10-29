@@ -1,10 +1,10 @@
-import { test, expect } from '@playwright/test';
+// e2e/smoke.spec.ts
+import { test, expect } from "@playwright/test";
 
-const routes = ['/', '/daytrip'];
-
+const routes = ["/", "/daytrip"];
 for (const route of routes) {
   test(`loads ${route}`, async ({ page }) => {
-    await page.goto(route);
-    await expect(page).toHaveTitle(/Tripklar|Next.js/i);
+    await page.goto("http://localhost:3000" + route);
+    await expect(page).toHaveTitle(/Tripklar|Next\.js/i);
   });
 }
