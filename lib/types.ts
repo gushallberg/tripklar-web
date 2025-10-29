@@ -1,29 +1,58 @@
-export type Deeplinks = {
-  transportUrl?: string;
-  lodgingUrl?: string;
-  activityUrl?: string;
+// lib/types.ts
+
+// ---- Suggest / Daytrip ----
+export type SuggestParams = {
+  scenario: string;
+  city: string;
+  date?: string;
+  radiusKm?: number;
+  tags?: string[];
+  limit?: number;
 };
-export type Place = { placeId: string; name: string; city?: string; lat: number; lon: number };
+
+// Viktigt: inkludera fält som UI:t förväntar sig (itineraryId, heroImage)
 export type SuggestItem = {
-  itineraryId: string;
+  id: string;
   title: string;
-  summary: string;
-  heroImage: string;
+  summary?: string;
   distanceKm?: number;
-  priceHint?: string;
-  place?: Place;
-  deeplinks?: Deeplinks;
-  isSponsored?: boolean;
+  durationHours?: number;
+  tags?: string[];
+  image?: string;
+  heroImage?: string;
+  url?: string;           // extern/intern länk
+  itineraryId?: string;   // koppling till itinerary
 };
-export type ItineraryDetail = {
-  itineraryId: string;
+
+export type SuggestResponse = {
+  items: SuggestItem[];
+  meta?: {
+    scenario: string;
+    city: string;
+    date?: string;
+    radiusKm: number;
+    limit: number;
+    tags?: string[];
+  };
+};
+
+// ---- Itinerary ----
+export type ItineraryStop = {
+  id?: string;
+  title?: string;
+  notes?: string;
+  durationMinutes?: number;
+};
+
+export type ItineraryDay = {
+  title?: string;
+  stops?: ItineraryStop[];
+};
+
+export type Itinerary = {
+  id: string;
   title: string;
-  summary: string;
-  paragraphs?: string[];
-  images?: { url: string; alt?: string }[];
-  map?: { lat: number; lon: number; zoom: number };
-  steps?: { time?: string; text: string }[];
-  deeplinks?: Deeplinks;
-  pdfUrl?: string;
-  icsUrl?: string;
+  description?: string;
+  paragraphs?: string[];     // <- gör .map(paragraph: string, index: number) typesafe
+  days?: ItineraryDay[];
 };
