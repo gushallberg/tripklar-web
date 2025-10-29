@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-test:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,8 +33,10 @@ jobs:
             echo "No stories found, skipping Storybook build."
           fi
 
-      - name: Install Playwright browsers + OS deps
+      - name: Install Playwright browsers (Ubuntu 24.04)
         run: npx playwright install --with-deps
 
-      - name: Run Playwright smoke tests
+      - name: Run e2e tests (Playwright)
+        env:
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000
         run: npm run test:e2e --if-present
