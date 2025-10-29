@@ -1,44 +1,74 @@
-import SmartButtons from '@/components/SmartButtons';
-import ItineraryTracker from '@/components/ItineraryTracker';
+// app/(routes)/itinerary/[id]/page.tsx
+
+import { Suspense } from 'react';
+import type { Itinerary } from '@/lib/types';
 import { getItinerary } from '@/lib/api';
 
-export default async function Page({ params, searchParams }: { params: { id: string }; searchParams: Record<string, string | undefined> }) {
-  const data = await getItinerary(params.id);
-  const scenario = searchParams.scenario;
-  const city = searchParams.city;
+type PageProps = {
+  params: { id: string };
+};
+
+export const dynamic = 'force-dynamic'; // undvik cache i CI om ni vill
+
+async function ItineraryContent({ id }: { id: string }) {
+  const data: Itinerary = await getItinerary(id);
 
   return (
-    <main className="mx-auto max-w-3xl space-y-4 p-4">
-      <h1 className="text-3xl font-semibold">{data.title}</h1>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={data.images?.[0]?.url || 'https://picsum.photos/seed/archipelago/1200/600'}
-        alt={data.images?.[0]?.alt || data.title}
-        className="h-64 w-full rounded-2xl object-cover"
-      />
-      <p className="text-gray-700">{data.summary}</p>
-      {data.paragraphs && (
-        <section className="space-y-3 text-gray-700">
-          {data.paragraphs.map((paragraph, index) => (
+    <main className="max-w-3xl mx-auto px-4 py-8">
+      <h1 className="text-3xl font-semibold mb-2">{data.title}</h1>
+
+      {data.description && (
+        <p className="text-gray-700 mb-6">{data.description}</p>
+      )}
+
+      {Array.isArray(data.paragraphs) && data.paragraphs.length > 0 && (
+        <section className="space-y-3 text-gray-700 mb-8">
+          {data.paragraphs.map((paragraph: string, index: number) => (
             <p key={index}>{paragraph}</p>
           ))}
         </section>
       )}
-      {data.steps && (
-        <section aria-label="Steg-för-steg" className="space-y-2">
-          <h2 className="text-xl font-semibold">Upplägg</h2>
-          <ol className="list-decimal space-y-1 pl-6">
-            {data.steps.map((s, i) => (
-              <li key={i}>
-                <span className="font-medium">{s.time ? `${s.time} ` : ''}</span>
-                {s.text}
-              </li>
-            ))}
-          </ol>
+
+      {Array.isArray(data.days) && data.days.length > 0 && (
+        <section className="space-y-6">
+          {data.days.map((day, idx) => (
+            <div key={idx} className="border rounded-lg p-4">
+              {day.title && (
+                <h2 className="text-xl font-medium mb-3">{day.title}</h2>
+              )}
+              {Array.isArray(day.stops) && day.stops.length > 0 ? (
+                <ol className="list-decimal pl-5 space-y-2">
+                  {day.stops.map((stop, i) => (
+                    <li key={`${stop.id ?? i}-${i}`}>
+                      <div className="font-medium">{stop.title ?? 'Stop'}</div>
+                      {typeof stop.durationMinutes === 'number' && (
+                        <div className="text-sm text-gray-500">
+                          ~{stop.durationMinutes} min
+                        </div>
+                      )}
+                      {stop.notes && (
+                        <div className="text-gray-600">{stop.notes}</div>
+                      )}
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="text-gray-500">Inga stopp definierade.</p>
+              )}
+            </div>
+          ))}
         </section>
       )}
-      <SmartButtons itineraryId={data.itineraryId} scenario={scenario} deeplinks={data.deeplinks} />
-      <ItineraryTracker scenario={scenario} city={city} />
     </main>
+  );
+}
+
+export default async function Page({ params }: PageProps) {
+  const id = params?.id;
+
+  return (
+    <Suspense fallback={<div className="p-8">Laddar färdplan…</div>}>
+      <ItineraryContent id={id} />
+    </Suspense>
   );
 }
