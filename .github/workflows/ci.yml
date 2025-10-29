@@ -5,19 +5,26 @@ on:
   push:
     branches: [ main, codex/**, feature/**, fix/** ]
   workflow_dispatch: {}
+
 jobs:
-  build:
+  build-test:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20 (with npm cache)
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
-      - name: Install dependencies
+
+      - name: Install deps (npm ci with fallback)
         run: npm ci || npm install
+
       - name: Build Next.js
         run: npm run build
+
       - name: Build Storybook (guarded)
         run: |
           if ls components/**/*.stories.* 1> /dev/null 2>&1 || ls stories/**/*.stories.* 1> /dev/null 2>&1; then
