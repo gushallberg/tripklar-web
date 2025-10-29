@@ -25,4 +25,10 @@ jobs:
       - name: Build Next.js
         run: npm run build
 
-      # Storybook & Playwright kan vi lägga till i senare PR:er.
+      - name: Build Storybook (guarded)
+        run: |
+          if ls components/**/*.stories.* 1> /dev/null 2>&1 || ls stories/**/*.stories.* 1> /dev/null 2>&1; then
+            npm run build-storybook || npx -y storybook@8 build
+          else
+            echo "No stories found, skipping Storybook build."
+          fi
