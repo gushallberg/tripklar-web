@@ -1,11 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import ItineraryCard from "@/components/ItineraryCard";
+import ItineraryCard from "../components/ItineraryCard";
 
 const meta: Meta<typeof ItineraryCard> = {
   title: "Components/ItineraryCard",
   component: ItineraryCard
 };
 export default meta;
+
 type Story = StoryObj<typeof ItineraryCard>;
 
 export const Default: Story = {
