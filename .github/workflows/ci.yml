@@ -8,7 +8,9 @@ on:
 
 jobs:
   build-test:
+    # Du kan låta 24.04 ligga kvar när vi använder officiella Playwright-actionen:
     runs-on: ubuntu-24.04
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,11 +35,12 @@ jobs:
             echo "No stories found, skipping Storybook build."
           fi
 
-      # 🔽 Lägg till dessa två steg
-      - name: Install Playwright browsers (Ubuntu 24.04)
-        run: npx playwright install --with-deps
+      # Viktigt: använd officiell action för att installera browsers + deps korrekt
+      - name: Setup Playwright (browsers + OS deps)
+        uses: microsoft/playwright-github-action@v1
 
       - name: Run e2e tests (Playwright)
         env:
+          # Bas-URL som vår fetch kan använda när test kör SSR
           NEXT_PUBLIC_SITE_URL: http://localhost:3000
         run: npm run test:e2e --if-present
