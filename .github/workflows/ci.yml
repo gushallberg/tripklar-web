@@ -33,7 +33,6 @@ jobs:
             echo "No stories found, skipping Storybook build."
           fi
 
-      # 🔽 Lägg till dessa två steg
       - name: Install Playwright browsers (Ubuntu 24.04)
         run: npx playwright install --with-deps
 
